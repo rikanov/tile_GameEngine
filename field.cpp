@@ -18,7 +18,7 @@
  */
 
 #include "field.h"
-
+#include <iostream>
  
 void Field::initTeleports()
 {
@@ -35,28 +35,49 @@ void Field::initTeleports()
     }
 }
 
-void Field::initEnvironment()
+void Field::initRangedSpots()
 {
-    environment = new Node(20);
-    environment->bind(this);
-    value = 0;
-    for(Node * next = environment->start(); environment->notEnded(); next = environment->next())
+    std::cout<<"col: "<<col<<" row: "<<row<<std::endl;
+    for(int i = 0, j = 0; i<size(); ++i)
     {
-        if(next->value == 3)
+        Field * next = at(i);
+        Node * r = new Node;
+        ranged_spots[i][0] = r;
+        r->bind(next);
+        for(next->start(); next->notEnded(); next->next())
+        {
+            if(next->curr() != this)
+            {
+                r->bind(next->curr());
+            }
+        }
+        Node * q = new Node;
+        ranged_spots[i][1] = q;
+        q->bind(r->at(1));
+        for(Field * p = r->at(1)->start(); r->at(1)->notEnded(); p = r->at(1)->next())
+        {
+            if(p != next)
+            {
+                q->bind(p);
+            }
+        }
+        if(r->at(2) == r->end())
         {
             continue;
         }
-        for(next->start(); next->notEnded(); next->next())
+        q->bind(r->at(2));
+        //..........
+        q = new Node;
+        ranged_spots[i][2] = q;
+        q->bind(r->at(2));
+        q->bind(r->at(1));        
+        for(Field * p = r->at(2)->start(); r->at(2)->notEnded(); p = r->at(2)->next())
         {
-            if(environment->imbue(next->curr()))
+            if(p != next)
             {
-                next->curr()->value = next->value +1;
+                q->bind(p);
             }
         }
-    }
-    for(environment->start(); environment->notEnded(); environment->next())
-    {
-        environment->curr()->value = 0;
     }
 }
 

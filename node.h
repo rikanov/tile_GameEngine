@@ -138,7 +138,7 @@ public:
     }
     Field * at(const int& index) const
     {
-        return *(connections+index);
+        return index < current_size ? *(connections+index) : *end_pointer;
     }
     void bind(Field * next)
     {

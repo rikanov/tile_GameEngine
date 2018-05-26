@@ -25,36 +25,37 @@
 
 class Field: public Node
 {
+public:
     static const int MAX_DEPTH = 10;
+   
+protected:
     
     Tile * tile;
     
-protected:
     int col = -1, row = -1;
     bool initialized = false;
-    int * depth;
-    int * depth_pointer;
     
     Node * teleports = nullptr;
-    Node * environment = nullptr;
+    Node * ranged_spots[4][4] = {};
     
 public:
     double ai_score = 0.0;
     
-    Field(): depth(new int[MAX_DEPTH])
+    Field()
     {
-        depth_pointer = depth;
-        *depth_pointer = 0;
     }
     virtual ~Field()
     {
-        delete[] depth;
+        for(int r = 0; r < 4; ++r)
+            for(int q = 0; q < 4; ++q)
+            {
+                delete ranged_spots[r][q];
+            }
         delete teleports;
-        delete environment;
     }
     
     void initTeleports();
-    void initEnvironment();
+    void initRangedSpots();
     
     void setPosition(const int& c, const int& r);
     
@@ -66,19 +67,6 @@ public:
     {
         return row;
     }
-    void setSearchLevel(const int& n)
-    {
-        *(++depth_pointer) = n;
-    }
-    void backSearchLevel()
-    {
-        --depth_pointer;
-    }
-    int getSearchLevel() const
-    {
-        return *depth_pointer;
-    }
-    
     void setTile(Tile *t)
     {
         tile = t;
@@ -121,6 +109,10 @@ public:
     Node* getTeleports() const
     {
         return teleports;
+    }
+    const auto getRange() const
+    {
+        return ranged_spots;
     }
     static void connect(Field * n1, Field * n2)
     {

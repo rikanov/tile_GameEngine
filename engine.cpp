@@ -128,6 +128,10 @@ void Engine::getSteps()
             {
                 getTeleporterSteps();
             }
+            if(isHunter(P))
+            {
+                getHunterSteps();
+            }
         }
     }
 }
@@ -183,6 +187,66 @@ void Engine::getTeleporterSteps()
         }
     }
 }
+
+void Engine::getHunterSteps()
+{
+    for(Field * f = start_field->start(); start_field->notEnded(); f = start_field->next())
+    {
+        if(f->empty() == false)
+        {
+            continue;
+        }
+        const auto range = f->getRange(); 
+        for(int neighbour = 0; neighbour < f->size(); ++neighbour)
+        {
+            auto N = range[neighbour];
+            if(checkRange(N[0],f))
+            {
+                continue;
+            }
+            checkRange(N[1],f);
+            if(N[2] != nullptr)
+            {
+                checkRange(N[2],f);
+            }
+        }        
+    }
+}
+
+bool /*is closed?*/ Engine::checkRange(Node* N, Field* step_to)
+{
+    if(N->start()->empty() == false && N->curr() != start_field)
+    {
+        return true;
+    }
+        
+    int attack_rate = 1;
+    for(Field * h = N->next(); N->notEnded(); h = N->next())
+    {
+        if(h->empty())
+        {
+            attack_rate = 0;
+            break;
+        }
+        else
+        {
+            attack_rate += isHunter(h->getPiece(current_turn));
+        }
+    }
+    for(Field * h = N->start(); N->notEnded(); h = N->next())
+    {
+        if(h->defiance(current_turn, attack_rate) == false)
+        {
+            last_step->clear();
+            last_step->bind(start_field);
+            last_step->bind(step_to);
+            last_step->bind(h);
+            ++last_step;
+        }
+    }
+    return attack_rate != 0;
+}
+
 
 void Engine::doStep(const Move& m)
 {

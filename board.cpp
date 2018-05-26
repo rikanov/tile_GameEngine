@@ -84,7 +84,7 @@ void Board::init()
         for(int row=0; row<8; ++row)
         {
             board[col][row]->initTeleports();
-            board[col][row]->initEnvironment();
+            board[col][row]->initRangedSpots();
         }
     }
     // distance from the centre

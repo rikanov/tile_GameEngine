@@ -68,6 +68,8 @@ class Engine: public Board
  
     void getMarchingSteps();
     void getTeleporterSteps();
+    void getHunterSteps();
+    bool checkRange(Node* N, Field* step_to);
     void useTeleports();
     
     void getStepFromView(Move*) const;
