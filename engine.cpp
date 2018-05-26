@@ -130,7 +130,7 @@ void Engine::getSteps()
             }
             if(isHunter(P))
             {
-                getHunterSteps();
+               getHunterSteps();
             }
         }
     }
@@ -148,7 +148,7 @@ void Engine::getMarchingSteps()
             {
                 current_step->last()->start();
             }
-            if(current_step->last()->curr()->defiance(current_turn,last_step->size())==false)
+            if(current_step->last()->curr()->defiance(current_turn,current_step->size())==false)
             {
                 last_step->clear();
                 last_step->setRevive(Node::NONE);

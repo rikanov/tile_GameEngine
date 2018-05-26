@@ -37,7 +37,6 @@ void Field::initTeleports()
 
 void Field::initRangedSpots()
 {
-    std::cout<<"col: "<<col<<" row: "<<row<<std::endl;
     for(int i = 0, j = 0; i<size(); ++i)
     {
         Field * next = at(i);
