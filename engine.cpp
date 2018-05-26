@@ -328,43 +328,38 @@ bool Engine::isAllowedMove(const Move& m) const
 void Engine::loop()
 {
     Move next;
+    last_step = available_steps;
+    getSteps();
     while(assigned_view->exit_request == false)
     {
-        last_step = available_steps;
-        getSteps();
-        while(assigned_view->exit_request == false)
-        {
-            assigned_view->select();
-            if(assigned_view->undo_request && step_index)
-            { 
-                step_history[step_index].backward->execute();
-                setViewFromStep(step_history[step_index--].backward);
-                swap();
-                //compareToView();
-                continue;
-            }
-            if(assigned_view->redo_request && step_history[step_index].forward)
-            {
-                step_history[step_index].forward->execute();
-                setViewFromStep(step_history[step_index++].forward);
-                swap();
-                //compareToView();
-                continue;                
-            }
-            getStepFromView(&next); 
-            if(isAllowedMove(next))
-            {
-                doStep(next);
-                setViewFromStep(&next);
-                swap();
-                //compareToView();
-                break;
-            }
-            assigned_view->selected.clear();
+        assigned_view->select();
+        if(assigned_view->undo_request && step_index)
+        { 
+            step_history[step_index].backward->execute();
+            setViewFromStep(step_history[step_index--].backward);
+            swap();
+            //compareToView();
+            continue;
         }
-    };
+        if(assigned_view->redo_request && step_history[step_index].forward)
+        {
+            step_history[step_index].forward->execute();
+            setViewFromStep(step_history[step_index++].forward);
+            swap();
+            //compareToView();
+            continue;                
+        }
+        getStepFromView(&next); 
+        if(isAllowedMove(next))
+        {
+            doStep(next);
+            setViewFromStep(&next);
+            swap();
+            //compareToView();
+        }
+        assigned_view->selected.clear();
+    }
 }
-
 
 Engine::~Engine()
 {

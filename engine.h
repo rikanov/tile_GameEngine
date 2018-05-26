@@ -61,6 +61,8 @@ class Engine: public Board
     void swap()
     {
         current_turn = current_turn == Ally::OWN ? Ally::FOE : Ally::OWN;
+        last_step = available_steps;
+        getSteps();
     }
     
     Tile * tiles[32] = {};    // indexed by UI piece-handlers
