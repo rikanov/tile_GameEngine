@@ -35,7 +35,6 @@ protected:
     int col = -1, row = -1;
     bool initialized = false;
     
-    Node * teleports = nullptr;
     Node * ranged_spots[4][4] = {};
     
 public:
@@ -51,10 +50,7 @@ public:
             {
                 delete ranged_spots[r][q];
             }
-        delete teleports;
     }
-    
-    void initTeleports();
     void initRangedSpots();
     
     void setPosition(const int& c, const int& r);
@@ -105,10 +101,6 @@ public:
     bool empty() const
     {
         return tile->empty();
-    }
-    Node* getTeleports() const
-    {
-        return teleports;
     }
     const auto getRange() const
     {

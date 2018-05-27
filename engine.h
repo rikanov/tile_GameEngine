@@ -24,6 +24,8 @@
 #include "move.h"
 #include "../View2D/view2d.h"
 #include <vector>
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
 
 class Engine: public Board
 {
@@ -90,6 +92,7 @@ public:
     void redoStep();
     
     void loop();
+    void smoke();
     
 private:
 

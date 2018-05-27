@@ -49,10 +49,11 @@ Engine::Engine(const Ally& A, BoardView* B)
 :Board()
 ,current_turn(A)
 ,assigned_view(nullptr)
-,available_steps(new Move[200])
+,available_steps(new Move[2000])
 ,current_step(new Move)
 ,path(new Node)
 {
+    srand (time(NULL));
     step_history.resize(MAX_NUMBER_OF_STEPS);
     start();
     setUI(B);
@@ -110,6 +111,7 @@ bool Engine::compareToView() const
 
 void Engine::getSteps()
 {
+    std::cout<<"get step test..."<<std::endl;
     last_step = available_steps;
     last_step->clear();
     const int A = current_turn == Ally::OWN;
@@ -134,6 +136,7 @@ void Engine::getSteps()
             }
         }
     }
+    std::cout<<"get step test OK"<<std::endl;
 }
 
 void Engine::getMarchingSteps()
@@ -162,28 +165,29 @@ void Engine::getMarchingSteps()
 
 void Engine::getTeleporterSteps()
 {
-    if(isAttacker(start_field->getPiece())==false) // avoid some redundancy
+    const bool not_attacker = isAttacker(start_field->getPiece())==false;
+    for(Field * next = start_field->start(); start_field->notEnded(); next = start_field->next())
     {
-        for(start_field->start(); start_field->notEnded(); start_field->next())
-        {
-            if(start_field->curr()->empty())
-            {
-                last_step->clear();
-                last_step->bind(start_field);
-                last_step->bind(start_field->curr());
-                ++last_step;                
-            }
-        }
-    }
-    Node * t = start_field->getTeleports();
-    for(Field * n = t->start(); t->notEnded(); n = t->next())
-    {
-        if(n->empty())
+        if(next->empty() && not_attacker) // avoid some redundancy
         {
             last_step->clear();
             last_step->bind(start_field);
-            last_step->bind(n);
-            ++last_step;
+            last_step->bind(next);
+            ++last_step;                
+        }
+        if(isTeleporter(next->getPiece(current_turn)) == false) // avoid redundancy
+        {
+            for(next->start(); next->notEnded(); next->next())
+            {
+                if(next->curr()->empty())
+                {
+                    last_step->clear();
+                    last_step->bind(start_field);
+                    last_step->bind(next->curr());
+                    ++last_step;                
+                }
+                
+            }
         }
     }
 }
@@ -359,6 +363,23 @@ void Engine::loop()
         }
         assigned_view->selected.clear();
     }
+}
+
+void Engine::smoke()
+{
+    Move next;
+    last_step = available_steps;
+    getSteps();
+    assigned_view->show();
+    while(step_index < MAX_NUMBER_OF_STEPS-1)
+    {
+        const int d = (last_step - available_steps);
+        next = *(available_steps + rand()%d);
+        doStep(next);
+        setViewFromStep(&next);
+        swap();
+        std::cout<<"turn: "<<step_index<<" number of steps: "<<d<<std::endl;
+    }   
 }
 
 Engine::~Engine()

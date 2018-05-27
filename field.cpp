@@ -19,21 +19,6 @@
 
 #include "field.h"
 #include <iostream>
- 
-void Field::initTeleports()
-{
-    teleports = new Node(6);
-    for(start(); notEnded(); next())
-    {
-        for(Field * n = curr()->start(); curr()->notEnded(); n = curr()->next())
-        {
-            if(n != this)
-            {
-                teleports->bind(n);
-            }
-        }
-    }
-}
 
 void Field::initRangedSpots()
 {
