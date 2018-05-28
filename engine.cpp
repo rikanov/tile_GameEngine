@@ -366,7 +366,7 @@ void Engine::loop()
 
 void Engine::smoke(const bool& w)
 {
-    Move next;
+    Move * next;
     SDL_Event event;
     last_step = available_steps;
     getSteps();
@@ -374,9 +374,13 @@ void Engine::smoke(const bool& w)
     while(step_index < MAX_NUMBER_OF_STEPS-1)
     {
         const int d = (last_step - available_steps);
-        next = *(available_steps + rand()%d);
-        doStep(next);
-        setViewFromStep(&next);
+        if(d<2)
+        {
+            break;
+        }
+        next = available_steps + rand()%d;
+        doStep(*next);
+        setViewFromStep(next);
         //assigned_view->selected.clear();
         swap();
         compareToView();

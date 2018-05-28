@@ -62,6 +62,7 @@ public:
     {
         progress_pointer = stack_pointer = connections = end_pointer = nullptr;
         delete[] inner_store;
+        inner_store = nullptr;
     }
     void getConnectionsFrom(const Node * from)
     {
