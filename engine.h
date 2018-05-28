@@ -92,7 +92,7 @@ public:
     void redoStep();
     
     void loop();
-    void smoke();
+    void smoke(const bool& w = false);
     
 private:
 

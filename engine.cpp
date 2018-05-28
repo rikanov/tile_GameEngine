@@ -23,7 +23,7 @@
 #include "field.h"
 
 const int Engine::DEPTH_BOUNDARY = 20;
-const int Engine::MAX_NUMBER_OF_STEPS = 1000;
+const int Engine::MAX_NUMBER_OF_STEPS = 100;
 
 const Engine::Position Engine::StartPositions[] =
 {
@@ -49,7 +49,7 @@ Engine::Engine(const Ally& A, BoardView* B)
 :Board()
 ,current_turn(A)
 ,assigned_view(nullptr)
-,available_steps(new Move[2000])
+,available_steps(new Move[300])
 ,current_step(new Move)
 ,path(new Node)
 {
@@ -105,13 +105,12 @@ bool Engine::compareToView() const
             return false;
         }
     }
-    std::cout<<"compare Ok. " <<std::endl;
+    // std::cout<<"compare Ok. " <<std::endl;
     return true;
 }
 
 void Engine::getSteps()
 {
-    std::cout<<"get step test..."<<std::endl;
     last_step = available_steps;
     last_step->clear();
     const int A = current_turn == Ally::OWN;
@@ -136,7 +135,6 @@ void Engine::getSteps()
             }
         }
     }
-    std::cout<<"get step test OK"<<std::endl;
 }
 
 void Engine::getMarchingSteps()
@@ -229,7 +227,7 @@ bool /*is closed?*/ Engine::checkRange(Node* N, Field* step_to)
     {
         if(h->empty())
         {
-            attack_rate = 0;
+            attack_rate = -1;
             break;
         }
         else
@@ -248,7 +246,7 @@ bool /*is closed?*/ Engine::checkRange(Node* N, Field* step_to)
             ++last_step;
         }
     }
-    return attack_rate != 0;
+    return attack_rate > 0;
 }
 
 
@@ -262,6 +260,7 @@ void Engine::doStep(const Move& m)
     ++step_index;
     delete step_history[step_index].forward;
     delete step_history[step_index].backward;
+    step_history[step_index].forward = nullptr;
     step_history[step_index].backward = bcwrd;
 }
 
@@ -365,9 +364,10 @@ void Engine::loop()
     }
 }
 
-void Engine::smoke()
+void Engine::smoke(const bool& w)
 {
     Move next;
+    SDL_Event event;
     last_step = available_steps;
     getSteps();
     assigned_view->show();
@@ -377,8 +377,19 @@ void Engine::smoke()
         next = *(available_steps + rand()%d);
         doStep(next);
         setViewFromStep(&next);
+        //assigned_view->selected.clear();
         swap();
-        std::cout<<"turn: "<<step_index<<" number of steps: "<<d<<std::endl;
+        compareToView();
+        std::cout<<"\rturn: "<<step_index<<" number of steps: "<<d<<"    "<<std::endl;
+        if( w ) do
+        {
+            SDL_WaitEvent(&event);
+            if(event.type == SDL_QUIT)
+            {
+                return;
+            }
+        }
+        while(event.type != SDL_KEYDOWN);
     }   
 }
 
