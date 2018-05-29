@@ -21,6 +21,7 @@ int main(int argc, char *argv[])
     
     atexit(exit); 
     test = new Engine(Ally::OWN, new View2D("First board", 1920, 1080));
-    test->smoke();
+    test->loop();
+    // test->smoke();
     return EXIT_SUCCESS;
 }

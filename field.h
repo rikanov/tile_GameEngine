@@ -33,6 +33,7 @@ protected:
     Tile * tile;
     
     int col = -1, row = -1;
+    int metric_index = -1;
     bool initialized = false;
     
     Node * ranged_spots[4][4] = {};
@@ -72,6 +73,17 @@ public:
     {
         tile = f->tile;
         f->tile->position = this;
+    }
+    void setMetric(const int& index)
+    {
+        if(metric_index == -1)
+        {
+            metric_index = index;
+        }
+    }
+    int getMetric() const
+    {
+        return metric_index;
     }
     bool defiance(const Ally& attacker, const int& power) const;
     Tile * getTile() const

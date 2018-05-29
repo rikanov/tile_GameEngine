@@ -29,6 +29,7 @@
 
 class Engine: public Board
 {
+    static const int METRIC_BOUNDARY; 
     static const int DEPTH_BOUNDARY; 
     static const int MAX_NUMBER_OF_STEPS;
     
@@ -46,6 +47,7 @@ class Engine: public Board
         Move * forward  = nullptr;
         Move * backward = nullptr;
     };
+    int metric_space[96][96];
     std::vector<Directions> step_history;
     int step_index = 0;
     
@@ -80,6 +82,7 @@ class Engine: public Board
     int /*handle*/ setViewFromStep(Move*) const;
     
     void setUI(BoardView * v);
+    void initMetric();
     void start();
     
 public:

@@ -22,6 +22,7 @@
 #include "tile.h"
 #include "field.h"
 
+const int Engine::METRIC_BOUNDARY = 99;
 const int Engine::DEPTH_BOUNDARY = 20;
 const int Engine::MAX_NUMBER_OF_STEPS = 100;
 
@@ -75,6 +76,7 @@ void Engine::start()
         setTile(next, 8 + 2 * p.row - p.col, 7 - p.row);
         tiles[index++] = crew[1][member++] = next;
     }
+    initMetric();
     std::cout<<"Engine has started"<<std::endl;
 }
 
@@ -88,6 +90,53 @@ void Engine::setUI(BoardView* v)
         assigned_view->createPieces(t->getAlly(),p->getCol(),p->getRow(),t->getName());
     }
     std::cout<<"UI has set"<<std::endl;
+}
+
+void Engine::initMetric()
+{
+    for(int col = 0, next_index=0; col < 15; ++col)
+    {
+        for(int row = 0; row < 8; ++row)
+        {
+            if(board[col][row]->single() == false)
+            {
+                board[col][row]->setMetric(next_index++);
+            }
+        }
+    }
+    
+    for(int i = 0; i < 96; ++i)
+        for(int j = 0; j < 96; ++j)
+            metric_space[i][j] = METRIC_BOUNDARY;
+    
+    Node BFS(9*96);
+    for(int col = 0; col < 15; ++col)
+    {
+        for(int row = 0; row < 8; ++row)
+        {
+            Field * f =board[col][row];
+            const int base_ind = f->getMetric();
+            if(base_ind == -1)
+            {
+                continue;
+            }
+            metric_space[base_ind][base_ind] = 0;
+            BFS.clear();
+            BFS.bind(f);
+            for(Field * next = BFS.start(); BFS.notEnded(); next = BFS.next())
+            {
+                for(next->start(); next->notEnded(); next->next())
+                {
+                    const int ind = next->curr()->getMetric();
+                    if(metric_space[base_ind][ind] > metric_space[base_ind][next->getMetric()])
+                    {
+                        metric_space[base_ind][ind] = metric_space[ind][base_ind] = metric_space[base_ind][next->getMetric()] + 1;
+                        BFS.bind(next->curr());
+                    }
+                }                
+            }
+        }
+    }  
 }
 
 bool Engine::compareToView() const
