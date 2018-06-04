@@ -69,5 +69,5 @@ Tile::Tile(const Ally& A, const Piece& piece, const int& h)
 }
 double Tile::getValue() const
 {
-    return value * position->value;
+    return position == nullptr ? 0 : value * position->ai_score;
 }

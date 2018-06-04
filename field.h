@@ -35,7 +35,6 @@ protected:
     int col = -1, row = -1;
     int metric_index = -1;
     bool initialized = false;
-    
     Node * ranged_spots[4][4] = {};
     
 public:

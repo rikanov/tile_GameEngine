@@ -25,6 +25,8 @@ class Move : public Node
 {
     Tile * revive;
 public:
+    double evaluated = -1.0;
+    
     Move():
     revive(Node::NONE)
     {

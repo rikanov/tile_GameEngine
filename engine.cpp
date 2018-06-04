@@ -22,9 +22,10 @@
 #include "tile.h"
 #include "field.h"
 
+const int Engine::AI_LEVEL = 3;
 const int Engine::METRIC_BOUNDARY = 99;
 const int Engine::DEPTH_BOUNDARY = 20;
-const int Engine::MAX_NUMBER_OF_STEPS = 100;
+const int Engine::MAX_NUMBER_OF_STEPS = 300;
 
 const Engine::Position Engine::StartPositions[] =
 {
@@ -50,10 +51,16 @@ Engine::Engine(const Ally& A, BoardView* B)
 :Board()
 ,current_turn(A)
 ,assigned_view(nullptr)
-,available_steps(new Move[300])
+,deep_search(new Move* [DEPTH_BOUNDARY])
+,end_search(new Move* [DEPTH_BOUNDARY])
 ,current_step(new Move)
 ,path(new Node)
 {
+    for(int i = 0; i < DEPTH_BOUNDARY; ++i)
+    {
+        deep_search[i] = new Move[300];
+    }
+    available_steps = deep_search[0];
     srand (time(NULL));
     step_history.resize(MAX_NUMBER_OF_STEPS);
     start();
@@ -160,7 +167,7 @@ bool Engine::compareToView() const
 
 void Engine::getSteps()
 {
-    last_step = available_steps;
+    last_step = end_search[searching_depth] = available_steps = deep_search[searching_depth];
     last_step->clear();
     const int A = current_turn == Ally::OWN;
     for(int index = 0; index<16; ++index)
@@ -184,6 +191,7 @@ void Engine::getSteps()
             }
         }
     }
+    end_search[searching_depth] = last_step;
 }
 
 void Engine::getMarchingSteps()
@@ -299,11 +307,11 @@ bool /*is closed?*/ Engine::checkRange(Node* N, Field* step_to)
 }
 
 
-void Engine::doStep(const Move& m)
+void Engine::doStep(Move * m)
 {
     Move * frwrd = new Move;
     Move * bcwrd = new Move;
-    frwrd->append(&m);
+    frwrd->append(m);
     frwrd->execute(bcwrd /*get inverse*/);
     step_history[step_index].forward = frwrd;
     ++step_index;
@@ -311,6 +319,22 @@ void Engine::doStep(const Move& m)
     delete step_history[step_index].backward;
     step_history[step_index].forward = nullptr;
     step_history[step_index].backward = bcwrd;
+    setViewFromStep(m);
+    swap();
+}
+
+void Engine::undoStep()
+{
+    step_history[step_index].backward->execute();
+    setViewFromStep(step_history[step_index--].backward);
+    swap();
+}
+
+void Engine::redoStep()
+{
+        step_history[step_index].forward->execute();
+        setViewFromStep(step_history[step_index++].forward);
+        swap();
 }
 
 void Engine::useTeleports()
@@ -387,26 +411,19 @@ void Engine::loop()
         assigned_view->select();
         if(assigned_view->undo_request && step_index)
         { 
-            step_history[step_index].backward->execute();
-            setViewFromStep(step_history[step_index--].backward);
-            swap();
-            //compareToView();
+            undoStep();
             continue;
         }
         if(assigned_view->redo_request && step_history[step_index].forward)
         {
-            step_history[step_index].forward->execute();
-            setViewFromStep(step_history[step_index++].forward);
-            swap();
-            //compareToView();
+            redoStep();
             continue;                
         }
         getStepFromView(&next); 
         if(isAllowedMove(next))
         {
-            doStep(next);
-            setViewFromStep(&next);
-            swap();
+            doStep(&next);
+            AI();
             //compareToView();
         }
         assigned_view->selected.clear();
@@ -426,12 +443,9 @@ void Engine::smoke(const bool& w)
         if(d<2)
         {
             break;
-        }
-        next = available_steps + rand()%d;
-        doStep(*next);
-        setViewFromStep(next);
-        //assigned_view->selected.clear();
-        swap();
+        } 
+        next = current_turn == Ally::OWN ? available_steps + rand()%d : chooseStep();
+        doStep(next);
         compareToView();
         std::cout<<"\rturn: "<<step_index<<" number of steps: "<<d<<"    "<<std::endl;
         if( w ) do
@@ -454,6 +468,12 @@ Engine::~Engine()
     {
         delete t;
     }
+    for(int i=0; i < DEPTH_BOUNDARY; ++i)
+    {
+        delete[] deep_search[i];
+    }
+    delete[] deep_search;
+    delete[] end_search;
     std::cout<<"Done. "<<std::endl;
     std::cout<<"purify step history..."<<std::endl;
     for(step_index=0; step_index<MAX_NUMBER_OF_STEPS; ++step_index)
@@ -465,6 +485,5 @@ Engine::~Engine()
     delete assigned_view;
     delete current_step;
     delete path;
-    delete[] available_steps;
     std::cout <<"Running engine has been finished."<<std::endl;
 }

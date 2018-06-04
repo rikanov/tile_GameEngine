@@ -46,8 +46,6 @@ protected:
     
 public:
     
-    int value = 0;
-    
     Node():
      inner_store(new Field* [5])
     {
@@ -128,6 +126,10 @@ public:
     Field * prev() const
     {
         return (progress_pointer != end_pointer) ? *(--progress_pointer) : *end_pointer;
+    }
+    Field * first() const
+    {
+        return *connections;
     }
     Field * last() const
     {

@@ -29,6 +29,7 @@
 
 class Engine: public Board
 {
+    static const int AI_LEVEL;
     static const int METRIC_BOUNDARY; 
     static const int DEPTH_BOUNDARY; 
     static const int MAX_NUMBER_OF_STEPS;
@@ -54,6 +55,8 @@ class Engine: public Board
     Ally current_turn;
     int searching_depth =0;
    
+    Move ** deep_search;
+    Move ** end_search;
     Move * available_steps;
     Move * last_step;
     Move * current_step;
@@ -80,17 +83,25 @@ class Engine: public Board
     
     void getStepFromView(Move*) const;
     int /*handle*/ setViewFromStep(Move*) const;
+  
+    
+    double evaluate() const;
+    Move * findStepFor(Move* last);
+    Move * chooseStep();
+    bool inNeighbourhood(Move * m1, Move * m2) const; // it could be a static function too
+    void AI();  
     
     void setUI(BoardView * v);
     void initMetric();
     void start();
+    
     
 public:
     Engine(const Ally& A, BoardView* B);
     ~Engine();
     void getSteps();
     
-    void doStep(const Move& m);
+    void doStep(Move * m);
     void undoStep();
     void redoStep();
     
