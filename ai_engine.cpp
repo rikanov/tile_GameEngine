@@ -24,8 +24,8 @@
 
 bool Engine::inNeighbourhood(Move* m1, Move* m2) const
 {
-    if(metric_space[m1->last()->getMetric()][m2->last()->getMetric()] < 3 || metric_space[m1->last()->getMetric()][m2->first()->getMetric()] < 3 ||
-       metric_space[m1->first()->getMetric()][m2->first()->getMetric()] < 3 || metric_space[m1->first()->getMetric()][m2->last()->getMetric()] < 3)
+    if(metric_space[m1->last()->getMetric()][m2->last()->getMetric()] < 4 || metric_space[m1->last()->getMetric()][m2->first()->getMetric()] < 4 ||
+       metric_space[m1->first()->getMetric()][m2->first()->getMetric()] < 4 || metric_space[m1->first()->getMetric()][m2->last()->getMetric()] < 4)
     {
         return true;
     }
@@ -86,25 +86,28 @@ Move * Engine::findStepFor(Move* last)
     {
         current_step->evaluated = 1/evaluate();
         return current_step;
-    }
+    } 
     ++searching_depth;
     getSteps();
-    Move back, *next;
-    double max = 0.0;
-    for(Move * check = deep_search[searching_depth]; check != end_search[searching_depth]; ++check)
+    Move *next;
+    double max = 0.001;
+    for(Move * check = deep_search[searching_depth]; max < last->evaluated && check != end_search[searching_depth]; ++check)
     {
-        if(last->last()->empty() == false /*hit*/ || inNeighbourhood(last, check))
+        if(check->last()->empty() == false /*hit*/ || inNeighbourhood(last, check))
         {
-            check->execute(&back);
+            check->evaluated = 1/max;
+            check->execute(local_invert+searching_depth);
             next = findStepFor(check);
+            (local_invert+searching_depth)->execute();
             if(next->evaluated > max)
             {
                 max = next->evaluated;
                 result = check;
             }
-            back.execute();
         }
     }
+    if(result == nullptr)
+                std::cout<<last->last()->getCol()<<':'<<last->last()->getRow()<<std::endl;
     result->evaluated = 1/max;
     available_steps = deep_search[--searching_depth];
     return result;
@@ -116,17 +119,18 @@ void Engine::AI()
     available_steps = deep_search[0];
     getSteps();
     double max = 0.0;
-    Move back, *next, *result = nullptr;
+    Move *next, *result = nullptr;
     for(Move* check = available_steps; check != end_search[0]; ++check)
     {
-        check->execute(&back);
+        check->evaluated = 1000.0;
+        check->execute(local_invert+searching_depth);
         next = findStepFor(check);
+        (local_invert+searching_depth)->execute();
         if(next->evaluated > max)
         {
             max = next->evaluated;
             result = check;
         }
-        back.execute();
     }
     doStep(result);
 }

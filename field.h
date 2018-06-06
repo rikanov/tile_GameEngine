@@ -88,7 +88,8 @@ public:
     Tile * getTile() const
     {
         return tile;
-    }    const Ally& getAlly() const
+    }    
+    const Ally& getAlly() const
     {
         return tile->getAlly();
     }

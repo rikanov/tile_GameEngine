@@ -18,6 +18,7 @@
  */
 
 #include <iostream>
+#include <ctime>
 #include "engine.h"
 #include "tile.h"
 #include "field.h"
@@ -53,6 +54,7 @@ Engine::Engine(const Ally& A, BoardView* B)
 ,assigned_view(nullptr)
 ,deep_search(new Move* [DEPTH_BOUNDARY])
 ,end_search(new Move* [DEPTH_BOUNDARY])
+,local_invert(new Move[DEPTH_BOUNDARY])
 ,current_step(new Move)
 ,path(new Node)
 {
@@ -346,7 +348,7 @@ void Engine::useTeleports()
         for(current_step->last()->next();current_step->last()->notEnded();current_step->last()->next()) // look around on the last field
         {
             Field * next = current_step->last()->curr();
-            while(current_step->size()<4 && isTeleporter(next->getPiece()) && next->getAlly() == current_turn) // a new teleporter unit can be joined to chain
+            while(current_step->size()<4 && isTeleporter(next->getPiece(current_turn)) ) // a new teleporter unit can be joined to chain
             {
                 if(current_step->blast() == next) // we've turned back
                 {
@@ -356,7 +358,7 @@ void Engine::useTeleports()
                 current_step->last()->start();
                 next = current_step->last()->curr(); // refresh
             }
-            if(next->empty())
+            if(next->empty() && current_step->size()>=2)
             {
                 last_step->clear();
                 last_step->bind(start_field);
@@ -423,7 +425,11 @@ void Engine::loop()
         if(isAllowedMove(next))
         {
             doStep(&next);
+            clock_t startTime = clock();
             AI();
+            clock_t endTime = clock();
+            clock_t clockTicksTaken = endTime - startTime;
+            std::cout<< "Benchmark: " << (clockTicksTaken / (double) CLOCKS_PER_SEC) <<std::endl;;
             //compareToView();
         }
         assigned_view->selected.clear();
@@ -460,6 +466,22 @@ void Engine::smoke(const bool& w)
     }   
 }
 
+void Engine::testLoop()
+{
+    last_step = available_steps;
+    getSteps();
+    assigned_view->show();
+    for(Move * check = deep_search[searching_depth]; check != end_search[searching_depth]; ++check)
+    {
+        doStep(check);
+    assigned_view->show();
+        SDL_Delay(1000);
+        undoStep();
+    assigned_view->show();
+        SDL_Delay(1000);
+    }
+}
+
 Engine::~Engine()
 {
     std::cout << "Stop engine... " << std::endl;
@@ -483,6 +505,8 @@ Engine::~Engine()
     }
     std::cout<<"Done. "<<std::endl;
     delete assigned_view;
+    
+    delete[] local_invert;
     delete current_step;
     delete path;
     std::cout <<"Running engine has been finished."<<std::endl;

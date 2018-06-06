@@ -57,11 +57,15 @@ class Engine: public Board
    
     Move ** deep_search;
     Move ** end_search;
+    
+    // locally used auxiliary variables
+    Move * local_invert;
     Move * available_steps;
     Move * last_step;
     Move * current_step;
     Node * path;
     Field * start_field;
+    // --------------------------------
     
     bool isAllowedMove(const Move & m) const;
     bool compareToView() const;
@@ -107,6 +111,7 @@ public:
     
     void loop();
     void smoke(const bool& w = false);
+    void testLoop();
     
 private:
 
