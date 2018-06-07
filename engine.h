@@ -59,6 +59,7 @@ class Engine: public Board
     Move ** end_search;
     
     // locally used auxiliary variables
+    Move DUMMY;
     Move * local_invert;
     Move * available_steps;
     Move * last_step;
@@ -71,9 +72,7 @@ class Engine: public Board
     bool compareToView() const;
     void swap()
     {
-        current_turn = current_turn == Ally::OWN ? Ally::FOE : Ally::OWN;
-        last_step = available_steps;
-        getSteps();
+        current_turn = (current_turn == Ally::OWN) ? Ally::FOE : Ally::OWN;
     }
     
     Tile * tiles[32] = {};    // indexed by UI piece-handlers

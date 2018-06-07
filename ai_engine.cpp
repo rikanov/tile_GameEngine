@@ -81,17 +81,19 @@ Move * Engine::chooseStep()
 
 Move * Engine::findStepFor(Move* last)
 {
+    swap();
     Move  *result = nullptr;
     if(searching_depth == AI_LEVEL)
     {
         current_step->evaluated = 1/evaluate();
+        swap();
         return current_step;
     } 
     ++searching_depth;
     getSteps();
     Move *next;
     double max = 0.001;
-    for(Move * check = deep_search[searching_depth]; max < last->evaluated && check != end_search[searching_depth]; ++check)
+    for(Move * check = deep_search[searching_depth]; max <= last->evaluated && check != end_search[searching_depth]; ++check)
     {
         if(check->last()->empty() == false /*hit*/ || inNeighbourhood(last, check))
         {
@@ -107,9 +109,13 @@ Move * Engine::findStepFor(Move* last)
         }
     }
     if(result == nullptr)
-                std::cout<<last->last()->getCol()<<':'<<last->last()->getRow()<<std::endl;
+    {
+        max = evaluate();
+        result = &DUMMY;
+    }
     result->evaluated = 1/max;
     available_steps = deep_search[--searching_depth];
+    swap();
     return result;
 }
 
@@ -120,7 +126,7 @@ void Engine::AI()
     getSteps();
     double max = 0.0;
     Move *next, *result = nullptr;
-    for(Move* check = available_steps; check != end_search[0]; ++check)
+    for(Move* check = deep_search[0]; check != end_search[0]; ++check)
     {
         check->evaluated = 1000.0;
         check->execute(local_invert+searching_depth);
@@ -132,6 +138,8 @@ void Engine::AI()
             result = check;
         }
     }
+        std::cout<<"test: "<<result->size()<<std::endl;
+    
     doStep(result);
 }
 

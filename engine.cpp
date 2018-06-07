@@ -23,7 +23,7 @@
 #include "tile.h"
 #include "field.h"
 
-const int Engine::AI_LEVEL = 3;
+const int Engine::AI_LEVEL = 4;
 const int Engine::METRIC_BOUNDARY = 99;
 const int Engine::DEPTH_BOUNDARY = 20;
 const int Engine::MAX_NUMBER_OF_STEPS = 300;
@@ -393,7 +393,7 @@ int /*handle*/ Engine::setViewFromStep(Move* n) const
 
 bool Engine::isAllowedMove(const Move& m) const
 {
-    for(Move* check = available_steps; check != last_step; ++check)
+    for(Move* check = deep_search[searching_depth]; check != end_search[searching_depth]; ++check)
     {
         if( *check == m)
         {
@@ -407,9 +407,9 @@ void Engine::loop()
 {
     Move next;
     last_step = available_steps;
-    getSteps();
     while(assigned_view->exit_request == false)
     {
+        getSteps();
         assigned_view->select();
         if(assigned_view->undo_request && step_index)
         { 

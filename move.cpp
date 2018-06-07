@@ -30,6 +30,7 @@
 
 void Move::execute() const
 {
+    last()->getTile()->position = nullptr;
     for(Field * f = back(); f != *connections; f = curr())
     {
         f->setTile(prev());
@@ -41,6 +42,7 @@ void Move::execute(Move* inv) const
 {    
     inv->clear();
     inv->setRevive(last()->getTile());
+    last()->getTile()->position = nullptr;
     for(Field * f = back(); f != *connections; f = curr())
     {
         f->setTile(prev());
